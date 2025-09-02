@@ -98,6 +98,7 @@
       border-radius: 3px;
       vertical-align: middle;
       position: relative;
+      cursor: pointer;
     `;
     
     const canvas = document.createElement('canvas');
@@ -110,6 +111,67 @@
     `;
     container.appendChild(canvas);
     
+    // Create tooltip container
+    const tooltip = document.createElement('div');
+    tooltip.id = `${CHART_CONTAINER_ID}-tooltip-${asin}`;
+    tooltip.style.cssText = `
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      margin-bottom: 10px;
+      padding: 8px;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      display: none;
+      z-index: 10000;
+      pointer-events: none;
+    `;
+    
+    const tooltipCanvas = document.createElement('canvas');
+    tooltipCanvas.width = 240;
+    tooltipCanvas.height = 80;
+    tooltipCanvas.style.cssText = `
+      display: block;
+      width: 240px;
+      height: 80px;
+    `;
+    tooltip.appendChild(tooltipCanvas);
+    
+    // Add arrow pointing down
+    const arrow = document.createElement('div');
+    arrow.style.cssText = `
+      position: absolute;
+      bottom: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-top: 6px solid white;
+      filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));
+    `;
+    tooltip.appendChild(arrow);
+    
+    container.appendChild(tooltip);
+    
+    // Add hover events
+    container.addEventListener('mouseenter', function() {
+      tooltip.style.display = 'block';
+      // Get the price history data stored on the container
+      const priceHistory = container.priceHistoryData;
+      if (priceHistory) {
+        renderPriceChart(tooltipCanvas, priceHistory, true); // true for detailed view
+      }
+    });
+    
+    container.addEventListener('mouseleave', function() {
+      tooltip.style.display = 'none';
+    });
+    
     // Insert container right after the price element
     if (priceElement && priceElement.parentNode) {
       priceElement.parentNode.insertBefore(container, priceElement.nextSibling);
@@ -118,13 +180,13 @@
     return canvas;
   }
   
-  function renderPriceChart(canvas, priceHistory) {
+  function renderPriceChart(canvas, priceHistory, isDetailed = false) {
     if (!priceHistory || priceHistory.length === 0) return;
     
     const ctx = canvas.getContext('2d');
     const width = canvas.width;
     const height = canvas.height;
-    const padding = 2;
+    const padding = isDetailed ? 4 : 2;
     
     ctx.clearRect(0, 0, width, height);
     
@@ -135,7 +197,7 @@
     
     // Draw sparkline
     ctx.strokeStyle = '#FF9900';
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = isDetailed ? 2 : 1.5;
     ctx.beginPath();
     
     priceHistory.forEach((point, index) => {
@@ -157,25 +219,79 @@
     const lastX = width - padding;
     const lastY = height - padding - ((priceHistory[priceHistory.length - 1].price - minPrice) / priceRange) * (height - 2 * padding);
     
+    // Draw dots - bigger for detailed view
+    const dotSize = isDetailed ? 3 : 2;
     ctx.fillStyle = '#FF9900';
-    ctx.beginPath();
-    ctx.arc(firstX, firstY, 2, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(lastX, lastY, 2, 0, Math.PI * 2);
-    ctx.fill();
     
-    // Show price change percentage
+    if (isDetailed) {
+      // In detailed view, draw all points
+      priceHistory.forEach((point, index) => {
+        const x = padding + (index / Math.max(1, priceHistory.length - 1)) * (width - 2 * padding);
+        const y = height - padding - ((point.price - minPrice) / priceRange) * (height - 2 * padding);
+        ctx.beginPath();
+        ctx.arc(x, y, dotSize, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    } else {
+      // In normal view, just first and last
+      ctx.beginPath();
+      ctx.arc(firstX, firstY, dotSize, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(lastX, lastY, dotSize, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    
+    // Show price change percentage from lowest price
     const currentPrice = priceHistory[priceHistory.length - 1].price;
-    const firstPrice = priceHistory[0].price;
-    const changePercent = ((currentPrice - firstPrice) / firstPrice * 100).toFixed(1);
-    const changeText = changePercent >= 0 ? `+${changePercent}%` : `${changePercent}%`;
-    const changeColor = changePercent >= 0 ? '#d14' : '#090';
+    let changeText, changeColor;
+    
+    if (priceHistory.length === 1) {
+      // New product, no history
+      changeText = 'NEW';
+      changeColor = '#666';
+    } else {
+      // Find the lowest price in history
+      const lowestPrice = Math.min(...prices);
+      
+      if (Math.abs(currentPrice - lowestPrice) < 0.001) {
+        // Current price is the lowest
+        changeText = 'LOWEST';
+        changeColor = '#090';
+      } else {
+        // Calculate percentage above lowest price
+        const changePercent = ((currentPrice - lowestPrice) / lowestPrice * 100);
+        
+        if (changePercent < 0.05) {
+          // Very close to lowest
+          changeText = '≈LOW';
+          changeColor = '#090';
+        } else {
+          const formattedPercent = changePercent.toFixed(1);
+          changeText = `+${formattedPercent}%`;
+          changeColor = '#d14';
+        }
+      }
+    }
     
     ctx.fillStyle = changeColor;
-    ctx.font = 'bold 9px Arial';
+    ctx.font = isDetailed ? 'bold 11px Arial' : 'bold 9px Arial';
     ctx.textAlign = 'right';
-    ctx.fillText(changeText, width - 2, 8);
+    ctx.fillText(changeText, width - 2, isDetailed ? 12 : 8);
+    
+    // In detailed view, show price range
+    if (isDetailed && priceHistory.length > 1) {
+      ctx.fillStyle = '#666';
+      ctx.font = '10px Arial';
+      ctx.textAlign = 'left';
+      
+      // Show min and max prices
+      const minPriceVal = Math.min(...prices);
+      const maxPriceVal = Math.max(...prices);
+      const currency = priceHistory[0].currency || '€';
+      
+      ctx.fillText(`min ${minPriceVal.toFixed(2)}${currency} max ${maxPriceVal.toFixed(2)}${currency}`, 4, height - 4);
+    }
   }
   
   async function injectCharts() {
@@ -194,6 +310,13 @@
       if (!priceElement) return;
       
       const canvas = createChartContainer(priceElement, asin);
+      const container = document.querySelector(`#${CHART_CONTAINER_ID}-${asin}`);
+      
+      // Store the price history data on the container for tooltip access
+      if (container) {
+        container.priceHistoryData = history[asin].priceHistory;
+      }
+      
       renderPriceChart(canvas, history[asin].priceHistory);
     });
     

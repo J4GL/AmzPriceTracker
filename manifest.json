@@ -10,8 +10,31 @@
     "alarms"
   ],
   "host_permissions": [
+    "https://*.amazon.com.au/*",
+    "https://*.amazon.com.be/*",
+    "https://*.amazon.com.br/*",
+    "https://*.amazon.ca/*",
+    "https://*.amazon.cn/*",
+    "https://*.amazon.eg/*",
     "https://*.amazon.fr/*",
-    "https://*.amazon.com/*"
+    "https://*.amazon.de/*",
+    "https://*.amazon.in/*",
+    "https://*.amazon.it/*",
+    "https://*.amazon.co.jp/*",
+    "https://*.amazon.com.mx/*",
+    "https://*.amazon.nl/*",
+    "https://*.amazon.pl/*",
+    "https://*.amazon.sa/*",
+    "https://*.amazon.sg/*",
+    "https://*.amazon.es/*",
+    "https://*.amazon.se/*",
+    "https://*.amazon.com.tr/*",
+    "https://*.amazon.ae/*",
+    "https://*.amazon.co.uk/*",
+    "https://*.amazon.com/*",
+    "https://*.amazon.co/*",
+    "https://*.amazon.com.cn/*",
+    "https://*.amazon.com.sg/*"
   ],
   "background": {
     "service_worker": "src/background/service-worker.js"
@@ -19,10 +42,56 @@
   "content_scripts": [
     {
       "matches": [
+        "https://*.amazon.com.au/gp/cart/*",
+        "https://*.amazon.com.au/hz/wishlist/*",
+        "https://*.amazon.com.be/gp/cart/*",
+        "https://*.amazon.com.be/hz/wishlist/*",
+        "https://*.amazon.com.br/gp/cart/*",
+        "https://*.amazon.com.br/hz/wishlist/*",
+        "https://*.amazon.ca/gp/cart/*",
+        "https://*.amazon.ca/hz/wishlist/*",
+        "https://*.amazon.cn/gp/cart/*",
+        "https://*.amazon.cn/hz/wishlist/*",
+        "https://*.amazon.eg/gp/cart/*",
+        "https://*.amazon.eg/hz/wishlist/*",
         "https://*.amazon.fr/gp/cart/*",
-        "https://*.amazon.com/gp/cart/*",
         "https://*.amazon.fr/hz/wishlist/*",
-        "https://*.amazon.com/hz/wishlist/*"
+        "https://*.amazon.de/gp/cart/*",
+        "https://*.amazon.de/hz/wishlist/*",
+        "https://*.amazon.in/gp/cart/*",
+        "https://*.amazon.in/hz/wishlist/*",
+        "https://*.amazon.it/gp/cart/*",
+        "https://*.amazon.it/hz/wishlist/*",
+        "https://*.amazon.co.jp/gp/cart/*",
+        "https://*.amazon.co.jp/hz/wishlist/*",
+        "https://*.amazon.com.mx/gp/cart/*",
+        "https://*.amazon.com.mx/hz/wishlist/*",
+        "https://*.amazon.nl/gp/cart/*",
+        "https://*.amazon.nl/hz/wishlist/*",
+        "https://*.amazon.pl/gp/cart/*",
+        "https://*.amazon.pl/hz/wishlist/*",
+        "https://*.amazon.sa/gp/cart/*",
+        "https://*.amazon.sa/hz/wishlist/*",
+        "https://*.amazon.sg/gp/cart/*",
+        "https://*.amazon.sg/hz/wishlist/*",
+        "https://*.amazon.es/gp/cart/*",
+        "https://*.amazon.es/hz/wishlist/*",
+        "https://*.amazon.se/gp/cart/*",
+        "https://*.amazon.se/hz/wishlist/*",
+        "https://*.amazon.com.tr/gp/cart/*",
+        "https://*.amazon.com.tr/hz/wishlist/*",
+        "https://*.amazon.ae/gp/cart/*",
+        "https://*.amazon.ae/hz/wishlist/*",
+        "https://*.amazon.co.uk/gp/cart/*",
+        "https://*.amazon.co.uk/hz/wishlist/*",
+        "https://*.amazon.com/gp/cart/*",
+        "https://*.amazon.com/hz/wishlist/*",
+        "https://*.amazon.co/gp/cart/*",
+        "https://*.amazon.co/hz/wishlist/*",
+        "https://*.amazon.com.cn/gp/cart/*",
+        "https://*.amazon.com.cn/hz/wishlist/*",
+        "https://*.amazon.com.sg/gp/cart/*",
+        "https://*.amazon.com.sg/hz/wishlist/*"
       ],
       "js": [
         "src/lib/chart.min.js",
@@ -35,20 +104,46 @@
   "action": {
     "default_popup": "src/popup/popup.html",
     "default_icon": {
-      "16": "icons/icon-16.svg",
-      "48": "icons/icon-48.svg",
-      "128": "icons/icon-128.svg"
+      "16": "icons/icon-16.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
     }
   },
   "icons": {
-    "16": "icons/icon-16.svg",
-    "48": "icons/icon-48.svg",
-    "128": "icons/icon-128.svg"
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
   },
   "web_accessible_resources": [
     {
       "resources": ["cookies.txt", "src/lib/chart.min.js"],
-      "matches": ["https://*.amazon.fr/*", "https://*.amazon.com/*"]
+      "matches": [
+        "https://*.amazon.com.au/*",
+        "https://*.amazon.com.be/*",
+        "https://*.amazon.com.br/*",
+        "https://*.amazon.ca/*",
+        "https://*.amazon.cn/*",
+        "https://*.amazon.eg/*",
+        "https://*.amazon.fr/*",
+        "https://*.amazon.de/*",
+        "https://*.amazon.in/*",
+        "https://*.amazon.it/*",
+        "https://*.amazon.co.jp/*",
+        "https://*.amazon.com.mx/*",
+        "https://*.amazon.nl/*",
+        "https://*.amazon.pl/*",
+        "https://*.amazon.sa/*",
+        "https://*.amazon.sg/*",
+        "https://*.amazon.es/*",
+        "https://*.amazon.se/*",
+        "https://*.amazon.com.tr/*",
+        "https://*.amazon.ae/*",
+        "https://*.amazon.co.uk/*",
+        "https://*.amazon.com/*",
+        "https://*.amazon.co/*",
+        "https://*.amazon.com.cn/*",
+        "https://*.amazon.com.sg/*"
+      ]
     }
   ]
 }

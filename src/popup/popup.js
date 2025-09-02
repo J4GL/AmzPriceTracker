@@ -121,8 +121,14 @@ function randomizePrices() {
         // Get the last price
         const lastPrice = data.priceHistory[data.priceHistory.length - 1].price;
         
-        // Generate random change between -10% to +10%
-        const changePercent = (Math.random() * 20 - 10) / 100; // -0.10 to +0.10
+        // Generate random change between -10% to +10%, but ensure it's at least 1%
+        let changePercent = (Math.random() * 20 - 10) / 100; // -0.10 to +0.10
+        
+        // Ensure minimum 1% change to make it visible
+        if (Math.abs(changePercent) < 0.01) {
+          changePercent = Math.random() > 0.5 ? 0.01 : -0.01;
+        }
+        
         const newPrice = Math.round(lastPrice * (1 + changePercent) * 100) / 100; // Round to 2 decimals
         
         // Add new price point

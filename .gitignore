@@ -1,0 +1,47 @@
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# API keys and secrets
+*.key
+*secret*
+*password*
+cookies.txt
+tests/fixtures/test-cookies.txt
+
+# Development files
+*.log
+.DS_Store
+Thumbs.db
+
+# Chrome extension packaging
+*.crx
+*.pem
+*.zip
+
+# Node modules (if used for build process)
+node_modules/
+
+# Build artifacts
+dist/
+build/
+
+# Testing
+coverage/
+test-results/
+playwright-report/
+extension-screenshot.png
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+tmp/
+temp/
+*.tmp

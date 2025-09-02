@@ -1,0 +1,53 @@
+{
+  "manifest_version": 3,
+  "name": "Amazon Price Tracker",
+  "version": "1.0.0",
+  "description": "Track price changes for Amazon cart and wishlist items",
+  "permissions": [
+    "storage",
+    "notifications",
+    "cookies"
+  ],
+  "host_permissions": [
+    "https://*.amazon.fr/*",
+    "https://*.amazon.com/*"
+  ],
+  "background": {
+    "service_worker": "src/background/service-worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.amazon.fr/gp/cart/*",
+        "https://*.amazon.com/gp/cart/*",
+        "https://*.amazon.fr/hz/wishlist/*",
+        "https://*.amazon.com/hz/wishlist/*"
+      ],
+      "js": [
+        "src/lib/chart.min.js",
+        "src/content/cart-tracker.js"
+      ],
+      "css": ["src/content/styles.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "src/popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.svg",
+      "48": "icons/icon-48.svg",
+      "128": "icons/icon-128.svg"
+    }
+  },
+  "icons": {
+    "16": "icons/icon-16.svg",
+    "48": "icons/icon-48.svg",
+    "128": "icons/icon-128.svg"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["cookies.txt", "src/lib/chart.min.js"],
+      "matches": ["https://*.amazon.fr/*", "https://*.amazon.com/*"]
+    }
+  ]
+}

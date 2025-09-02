@@ -1,0 +1,16 @@
+{
+  "name": "amz-price-tracker",
+  "version": "1.0.0",
+  "description": "Amazon Price Tracker Chrome Extension",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "lint": "eslint src/**/*.js",
+    "typecheck": "echo 'No TypeScript files to check'"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0",
+    "eslint": "^8.57.0"
+  },
+  "dependencies": {}
+}

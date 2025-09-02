@@ -46,6 +46,7 @@ function attachEventListeners() {
   document.getElementById('checkNow').addEventListener('click', checkPricesNow);
   document.getElementById('exportData').addEventListener('click', exportData);
   document.getElementById('clearHistory').addEventListener('click', clearHistory);
+  document.getElementById('randomizePrices').addEventListener('click', randomizePrices);
 }
 
 function saveSettings() {
@@ -108,6 +109,48 @@ function clearHistory() {
       }
     });
   }
+}
+
+function randomizePrices() {
+  chrome.storage.local.get(['amz_price_history'], (result) => {
+    const history = result.amz_price_history || {};
+    let updatedCount = 0;
+    
+    for (const [asin, data] of Object.entries(history)) {
+      if (data.priceHistory && data.priceHistory.length > 0) {
+        // Get the last price
+        const lastPrice = data.priceHistory[data.priceHistory.length - 1].price;
+        
+        // Generate random change between -10% to +10%
+        const changePercent = (Math.random() * 20 - 10) / 100; // -0.10 to +0.10
+        const newPrice = Math.round(lastPrice * (1 + changePercent) * 100) / 100; // Round to 2 decimals
+        
+        // Add new price point
+        data.priceHistory.push({
+          price: newPrice,
+          currency: data.priceHistory[data.priceHistory.length - 1].currency || 'EUR',
+          timestamp: Date.now()
+        });
+        
+        // Keep only last 100 entries
+        if (data.priceHistory.length > 100) {
+          data.priceHistory.shift();
+        }
+        
+        updatedCount++;
+      }
+    }
+    
+    // Save the updated history
+    chrome.storage.local.set({ amz_price_history: history }, () => {
+      showStatus(`Randomized ${updatedCount} product prices`, 'success');
+      setTimeout(() => {
+        loadStats();
+        // Trigger price check to test notifications
+        chrome.runtime.sendMessage({ action: 'forceCheck' });
+      }, 500);
+    });
+  });
 }
 
 function showStatus(message, type) {

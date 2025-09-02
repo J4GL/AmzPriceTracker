@@ -222,6 +222,15 @@ header svg {
   background: #c82333;
 }
 
+.btn-test {
+  background: #17a2b8;
+  color: white;
+}
+
+.btn-test:hover {
+  background: #138496;
+}
+
 footer {
   padding: 10px 15px;
   background: #f8f8f8;

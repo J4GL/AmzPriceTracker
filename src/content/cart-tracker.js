@@ -79,8 +79,8 @@
     return history;
   }
   
-  function createChartContainer(parentElement, asin) {
-    const existing = parentElement.querySelector(`#${CHART_CONTAINER_ID}-${asin}`);
+  function createChartContainer(priceElement, asin) {
+    const existing = document.querySelector(`#${CHART_CONTAINER_ID}-${asin}`);
     if (existing) {
       return existing.querySelector('canvas');
     }
@@ -88,31 +88,33 @@
     const container = document.createElement('div');
     container.id = `${CHART_CONTAINER_ID}-${asin}`;
     container.style.cssText = `
-      width: 100%;
-      max-width: 500px;
-      height: 200px;
-      margin: 10px 0;
-      padding: 10px;
+      display: inline-block;
+      width: 120px;
+      height: 40px;
+      margin-left: 10px;
+      padding: 4px;
       background: #f7f7f7;
       border: 1px solid #ddd;
-      border-radius: 4px;
+      border-radius: 3px;
+      vertical-align: middle;
+      position: relative;
     `;
     
     const canvas = document.createElement('canvas');
-    canvas.width = 480;
-    canvas.height = 180;
+    canvas.width = 112;
+    canvas.height = 32;
+    canvas.style.cssText = `
+      display: block;
+      width: 100%;
+      height: 100%;
+    `;
     container.appendChild(canvas);
     
-    const title = document.createElement('div');
-    title.style.cssText = `
-      font-weight: bold;
-      margin-bottom: 5px;
-      color: #333;
-    `;
-    title.textContent = 'Price History';
-    container.insertBefore(title, canvas);
+    // Insert container right after the price element
+    if (priceElement && priceElement.parentNode) {
+      priceElement.parentNode.insertBefore(container, priceElement.nextSibling);
+    }
     
-    parentElement.appendChild(container);
     return canvas;
   }
   
@@ -122,29 +124,22 @@
     const ctx = canvas.getContext('2d');
     const width = canvas.width;
     const height = canvas.height;
-    const padding = 40;
+    const padding = 2;
     
     ctx.clearRect(0, 0, width, height);
     
     const prices = priceHistory.map(p => p.price);
-    const minPrice = Math.min(...prices) * 0.95;
-    const maxPrice = Math.max(...prices) * 1.05;
-    const priceRange = maxPrice - minPrice;
+    const minPrice = Math.min(...prices) * 0.98;
+    const maxPrice = Math.max(...prices) * 1.02;
+    const priceRange = maxPrice - minPrice || 1;
     
-    ctx.strokeStyle = '#ddd';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(padding, padding);
-    ctx.lineTo(padding, height - padding);
-    ctx.lineTo(width - padding, height - padding);
-    ctx.stroke();
-    
+    // Draw sparkline
     ctx.strokeStyle = '#FF9900';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
     
     priceHistory.forEach((point, index) => {
-      const x = padding + (index / (priceHistory.length - 1)) * (width - 2 * padding);
+      const x = padding + (index / Math.max(1, priceHistory.length - 1)) * (width - 2 * padding);
       const y = height - padding - ((point.price - minPrice) / priceRange) * (height - 2 * padding);
       
       if (index === 0) {
@@ -152,26 +147,25 @@
       } else {
         ctx.lineTo(x, y);
       }
-      
-      ctx.fillStyle = '#FF9900';
-      ctx.beginPath();
-      ctx.arc(x, y, 3, 0, Math.PI * 2);
-      ctx.fill();
-      
-      if (index === 0 || index === priceHistory.length - 1) {
-        ctx.fillStyle = '#333';
-        ctx.font = '10px Arial';
-        ctx.fillText(`€${point.price.toFixed(2)}`, x - 20, y - 10);
-        
-        const date = new Date(point.timestamp);
-        const dateStr = `${date.getDate()}/${date.getMonth() + 1}`;
-        ctx.fillText(dateStr, x - 15, height - padding + 15);
-      }
     });
     
-    ctx.strokeStyle = '#FF9900';
     ctx.stroke();
     
+    // Draw small dots for first and last points
+    const firstX = padding;
+    const firstY = height - padding - ((priceHistory[0].price - minPrice) / priceRange) * (height - 2 * padding);
+    const lastX = width - padding;
+    const lastY = height - padding - ((priceHistory[priceHistory.length - 1].price - minPrice) / priceRange) * (height - 2 * padding);
+    
+    ctx.fillStyle = '#FF9900';
+    ctx.beginPath();
+    ctx.arc(firstX, firstY, 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(lastX, lastY, 2, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Show price change percentage
     const currentPrice = priceHistory[priceHistory.length - 1].price;
     const firstPrice = priceHistory[0].price;
     const changePercent = ((currentPrice - firstPrice) / firstPrice * 100).toFixed(1);
@@ -179,8 +173,9 @@
     const changeColor = changePercent >= 0 ? '#d14' : '#090';
     
     ctx.fillStyle = changeColor;
-    ctx.font = 'bold 12px Arial';
-    ctx.fillText(changeText, width - padding - 40, padding - 10);
+    ctx.font = 'bold 9px Arial';
+    ctx.textAlign = 'right';
+    ctx.fillText(changeText, width - 2, 8);
   }
   
   async function injectCharts() {
@@ -194,7 +189,11 @@
       const asin = item.getAttribute('data-asin');
       if (!asin || !history[asin]) return;
       
-      const canvas = createChartContainer(item, asin);
+      // Find the price element within this item
+      const priceElement = item.querySelector('.sc-product-price, .a-price-whole, .sc-badge-price-to-pay .a-price, .a-price');
+      if (!priceElement) return;
+      
+      const canvas = createChartContainer(priceElement, asin);
       renderPriceChart(canvas, history[asin].priceHistory);
     });
     

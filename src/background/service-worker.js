@@ -62,6 +62,7 @@ async function checkPrices() {
       priority: 2
     });
   });
+}
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'getPriceHistory') {

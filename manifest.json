@@ -6,7 +6,8 @@
   "permissions": [
     "storage",
     "notifications",
-    "cookies"
+    "cookies",
+    "alarms"
   ],
   "host_permissions": [
     "https://*.amazon.fr/*",

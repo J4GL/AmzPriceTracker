@@ -56,12 +56,7 @@ async function checkPrices() {
   notifications.forEach(notif => {
     chrome.notifications.create(`price-drop-${notif.asin}`, {
       type: 'basic',
-      iconUrl: chrome.runtime.getURL('icons/icon-128.svg'),
-      title: 'Price Drop Alert!',
-      message: `${notif.title} dropped ${notif.dropPercent}% from €${notif.previousPrice.toFixed(2)} to €${notif.currentPrice.toFixed(2)}`,
-      priority: 2
-    });
-  });
+      iconUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEwAACxMBAJqcGAAABHJJREFUeJztm0tIVFEYx3/3zozjjI/MfGRqZpZZWVlZUVBQEEVRFEVRVBRFURQVRUFBQUFBQRAEQRAEQRAEQdCDHvSgBz3oQQ960IOe9KQnPelJj/9Z3GFm7p17z/nO98090/nBgDNz7vn+3/9859xz7jkXFAqFQqFQKBSKSqQK6AQ6gHagDWgBmoBGoB6oA2qBaqAKyBj/zwM5YBqYAiaACWAMGAVGgGFgCBgEBoBvwIL/lxKMRqAHWA2sBFYAy4GlQDMiuFdmgO/AIPAF+Ah8AN4D74BPQL9kGwJFGlgLrAPWAKuAlcByoB0RXpJJYAgYBD4DH4D3wFvgNfAKGJFsix9UAVuArcAmYCPQhQwvTjGLPCGvgJfAc+AZ8ATol2xHIFqB3cAuYDuwAbH7KDGHeIt4i3ibeJsES7gm4CBwCLgIvEB8M0rhRBdRR9RVjHEE2IfEFZGhGjgMnAauI3FAJV94ERNId3EGOIK8eUIjDRwCLgC3gD9Ez+YDxyTymrkNXEC8SSJiaoGTwE3k7RB1IWU42/iGnKfaMa0GzgJXER9WQrun
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -154,5 +149,3 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
     console.log('Price history updated');
   }
 });
-
-console.log('Amazon Price Tracker service worker loaded');

@@ -232,25 +232,70 @@
   }
   
   function observeCartChanges() {
+    let debounceTimer;
+    
     const observer = new MutationObserver((mutations) => {
-      const hasRelevantChanges = mutations.some(mutation => {
-        return mutation.type === 'childList' && 
-               (mutation.target.querySelector('[data-asin]') || 
-                mutation.target.closest('[data-asin]'));
+      // Check if any new product items were added
+      const hasNewProducts = mutations.some(mutation => {
+        if (mutation.type !== 'childList') return false;
+        
+        // Check added nodes for product items
+        for (const node of mutation.addedNodes) {
+          if (node.nodeType === 1) { // Element node
+            // Check if the node itself or its children have data-asin
+            if (node.hasAttribute && node.hasAttribute('data-asin')) return true;
+            if (node.querySelector && node.querySelector('[data-asin]')) return true;
+            // Also check for price elements that might indicate new content
+            if (node.querySelector && node.querySelector('.sc-product-price, .a-price')) return true;
+          }
+        }
+        return false;
       });
       
-      if (hasRelevantChanges) {
-        setTimeout(injectCharts, 1000);
+      if (hasNewProducts) {
+        // Debounce to avoid multiple calls
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+          console.log('Price Tracker: New products detected, updating charts...');
+          injectCharts();
+        }, 500);
       }
     });
     
-    const cartContainer = document.querySelector('#sc-active-cart, .sc-list-body, [data-name="Active Items"]');
-    if (cartContainer) {
-      observer.observe(cartContainer, {
-        childList: true,
-        subtree: true
+    // Observe the entire body for better coverage
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+    
+    // Also add intersection observer for lazy-loaded content
+    const intersectionObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const asin = entry.target.getAttribute('data-asin');
+          const existingChart = document.querySelector(`#${CHART_CONTAINER_ID}-${asin}`);
+          if (asin && !existingChart) {
+            console.log(`Price Tracker: Product ${asin} now visible, adding chart...`);
+            injectCharts();
+          }
+        }
       });
-    }
+    });
+    
+    // Observe all product items for visibility
+    const observeProductItems = () => {
+      document.querySelectorAll('[data-asin]').forEach(item => {
+        intersectionObserver.observe(item);
+      });
+    };
+    
+    observeProductItems();
+    // Re-observe after any chart injection
+    const originalInjectCharts = injectCharts;
+    window.injectCharts = async function() {
+      await originalInjectCharts();
+      observeProductItems();
+    };
   }
   
   function init() {
@@ -268,6 +313,24 @@
     
     window.addEventListener('load', () => {
       setTimeout(injectCharts, 2000);
+    });
+    
+    // Add scroll listener to catch any missed dynamic content
+    let scrollTimer;
+    window.addEventListener('scroll', () => {
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(() => {
+        // Check for items without charts
+        const itemsWithoutCharts = Array.from(document.querySelectorAll('[data-asin]')).filter(item => {
+          const asin = item.getAttribute('data-asin');
+          return asin && !document.querySelector(`#${CHART_CONTAINER_ID}-${asin}`);
+        });
+        
+        if (itemsWithoutCharts.length > 0) {
+          console.log(`Price Tracker: Found ${itemsWithoutCharts.length} items without charts`);
+          injectCharts();
+        }
+      }, 1000);
     });
   }
   
